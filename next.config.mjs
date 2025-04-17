@@ -1,4 +1,17 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+import dotenv from 'dotenv';
 
-export default nextConfig;
+// Load environment variables manually
+dotenv.config();
+const nextConfig = {
+    webpack(config, { isServer }) {
+      // Suppress Sequelize dynamic require warning
+      if (isServer) {
+        config.module.exprContextCritical = false;
+      }
+      return config;
+    },
+  };
+  
+  export default nextConfig;
+  

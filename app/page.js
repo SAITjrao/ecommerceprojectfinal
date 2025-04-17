@@ -5,9 +5,6 @@ import Footer from "./components/Footer";
 export default function Home() {
   return (
     <div>
-      {/* Header */}
-      <Header />
-
       {/* Hero Banner */}
       <section
         className="relative bg-cover bg-center h-96"
@@ -43,7 +40,7 @@ export default function Home() {
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Disposable Containers</h3>
-                <a href="/products" className="text-blue-500 hover:underline">
+                <a href="/products/containers" className="text-blue-500 hover:underline">
                   Shop Now
                 </a>
               </div>
@@ -58,7 +55,7 @@ export default function Home() {
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Disposable Bowls</h3>
-                <a href="/products" className="text-blue-500 hover:underline">
+                <a href="/products/bowls" className="text-blue-500 hover:underline">
                   Shop Now
                 </a>
               </div>
@@ -73,7 +70,7 @@ export default function Home() {
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Cutlery</h3>
-                <a href="/products" className="text-blue-500 hover:underline">
+                <a href="/products/cutlery" className="text-blue-500 hover:underline">
                   Shop Now
                 </a>
               </div>
@@ -88,7 +85,7 @@ export default function Home() {
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Cups & Lids</h3>
-                <a href="/products" className="text-blue-500 hover:underline">
+                <a href="/products/cups" className="text-blue-500 hover:underline">
                   Shop Now
                 </a>
               </div>
@@ -103,7 +100,7 @@ export default function Home() {
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Napkins</h3>
-                <a href="/products" className="text-blue-500 hover:underline">
+                <a href="/products/napkins" className="text-blue-500 hover:underline">
                   Shop Now
                 </a>
               </div>
@@ -111,9 +108,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }

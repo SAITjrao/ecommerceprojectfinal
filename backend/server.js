@@ -14,8 +14,8 @@ app.use(express.json());
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'your_database_name',
+  password: process.env.DB_PASSWORD || 'Kanwal30695!',
+  database: process.env.DB_NAME || 'ecommerce_store',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -36,7 +36,7 @@ testConnection();
 // Example API endpoint
 app.get('/api/data', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM your_table');
+    const [rows] = await pool.query('SELECT * FROM users');
     res.json(rows);
   } catch (error) {
     console.error(error);

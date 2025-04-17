@@ -1,6 +1,5 @@
-// models/Product.js
 import { DataTypes } from 'sequelize';
-import sequelize from '../lib/sequelize.js'; // 🔁 changed from '@/lib/sequelize'
+import sequelize from '../lib/sequelize.js'; 
 
 const Product = sequelize.define('Product', {
   product_id: {
