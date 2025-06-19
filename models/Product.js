@@ -1,22 +1,2 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../lib/sequelize.js'; 
-
-const Product = sequelize.define('Product', {
-  product_id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  name: DataTypes.STRING,
-  price: DataTypes.DECIMAL(10, 2),
-  description: DataTypes.TEXT,
-  material: DataTypes.ENUM('Foam', 'Paper', 'Plastic'),
-  quantity: DataTypes.INTEGER,
-  category: DataTypes.ENUM('Containers', 'Bowls', 'Cups', 'Cutlery', 'Napkins'),
-  stock: DataTypes.INTEGER,
-}, {
-  tableName: 'products',
-  timestamps: false
-});
-
-export default Product;
+// Product model is now managed in Supabase. This file is no longer used.
+// Remove all Sequelize/MySQL code from the project.
