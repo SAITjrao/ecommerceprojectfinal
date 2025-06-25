@@ -39,6 +39,8 @@ export default function Home() {
                 src="/categories/containers.jpg"
                 alt="Disposable Containers"
                 className="w-full h-40 object-cover"
+                width={400}
+                height={300}
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Disposable Containers</h3>
@@ -54,6 +56,8 @@ export default function Home() {
                 src="/categories/bowls.jpg"
                 alt="Disposable Bowls"
                 className="w-full h-40 object-cover"
+                width={400}
+                height={300}
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Disposable Bowls</h3>
@@ -69,6 +73,8 @@ export default function Home() {
                 src="/categories/cutlery.jpg"
                 alt="Cutlery"
                 className="w-full h-40 object-cover"
+                width={400}
+                height={300}
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Cutlery</h3>
@@ -84,6 +90,8 @@ export default function Home() {
                 src="/categories/cups.jpg"
                 alt="Cups & Lids"
                 className="w-full h-40 object-cover"
+                width={400}
+                height={300}
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Cups & Lids</h3>
@@ -99,6 +107,8 @@ export default function Home() {
                 src="/categories/napkins.jpg"
                 alt="Napkins"
                 className="w-full h-40 object-cover"
+                width={400}
+                height={300}
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Napkins</h3>
