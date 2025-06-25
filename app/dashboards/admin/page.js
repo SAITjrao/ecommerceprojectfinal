@@ -1,42 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import Image from 'next/image';
+import { fetchProducts } from '@/lib/fetchAllProducts';
 
 export default function AdminDashboard() {
-  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [totalProducts, setTotalProducts] = useState(0);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const getProducts = async () => {
       try {
         setLoading(true);
-
-        // get total count of products
-        const { count, error: countError } = await supabase
-          .from('products')
-          .select('*', { count: 'exact', head: true });
-
-        if (countError) throw countError;
-        setTotalProducts(count);
-
-        // Pagination range
-        const from = (page - 1) * pageSize;
-        const to = from + pageSize - 1;
-
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .order('id', { ascending: false })
-          .range(from, to);
-
-        if (error) throw error;
+        const { data, count } = await fetchProducts(page, pageSize);
         setProducts(data);
+        setTotalProducts(count);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -44,7 +26,7 @@ export default function AdminDashboard() {
       }
     };
 
-    fetchProducts();
+    getProducts();
   }, [page, pageSize]);
 
   const totalPages = Math.ceil(totalProducts / pageSize);
