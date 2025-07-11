@@ -16,7 +16,7 @@ export default function Home() {
           </h1>
           <Link
             href="/products"
-            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded shadow"
+            className="bg-green-600 hover:bg-blue-600 text-white px-6 py-3 rounded shadow"
           >
             View Products
           </Link>
