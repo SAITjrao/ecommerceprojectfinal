@@ -1,46 +1,35 @@
-import sequelize from '@/lib/sequelize';
-import Order from '@/models/Order';
-import OrderItem from '@/models/OrderItem';
+import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabaseClient";
 
 export async function POST(request) {
-  const transaction = await sequelize.transaction();
-
   try {
     const { user_id, items, total_amount } = await request.json();
 
-    // Create the order
-    const order = await Order.create({
-      user_id,
-      total_amount,
-      status: 'Pending',
-      payment_status: 0
-    }, { transaction });
+    // Insert order
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .insert([{ user_id, total_amount }])
+      .select()
+      .single();
 
-    // Create order items
-    await Promise.all(
-      items.map(item => 
-        OrderItem.create({
-          order_id: order.order_id,
-          product_id: item.product_id,
-          quantity: item.quantity,
-          price: item.price
-        }, { transaction })
-      )
-    );
+    if (orderError) throw orderError;
 
-    await transaction.commit();
+    // Insert order items
+    const orderItems = items.map(item => ({
+      order_id: order.order_id,
+      product_id: item.product_id,
+      quantity: item.quantity,
+      price: item.price,
+    }));
 
-    return Response.json({
-      success: true,
-      order_id: order.order_id
-    });
+    const { error: itemsError } = await supabase
+      .from('orderitems')
+      .insert(orderItems);
 
+    if (itemsError) throw itemsError;
+
+    return NextResponse.json({ order_id: order.order_id }, { status: 201 });
   } catch (error) {
-    await transaction.rollback();
-    console.error('Order creation error:', error);
-    return Response.json(
-      { success: false, message: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }

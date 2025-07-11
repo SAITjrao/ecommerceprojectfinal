@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCart } from "../context/CartContext";
 import { useState, useEffect } from "react";
+import Image from 'next/image';
 
 export default function Header() {
   const { cart } = useCart();
@@ -30,10 +31,12 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
           {/* Logo & Store Name */}
           <div className="flex items-center">
-            <img
+            <Image
               src="/categories/supply-logo.jpg"
               alt="Supply Logo"
               className="h-10 w-auto mr-2"
+              width={40}
+              height={40}
             />
             <span className="text-2xl font-bold text-blue-500">
               Supply Store
@@ -64,18 +67,22 @@ export default function Header() {
               </span>
             )}
             <Link href="/login">
-              <img
+              <Image
                 src="/categories/login-icon.svg"
                 alt="Login Icon"
                 className="h-7 w-7"
+                width={28}
+                height={28}
               />
             </Link>
 
             <Link href="/cart" className="relative">
-              <img
+              <Image
                 src="/categories/cart-icon.svg"
                 alt="Cart Icon"
                 className="h-7 w-7"
+                width={28}
+                height={28}
               />
               {totalItems > 0 && (
                 <span className="absolute -top-0.5 -right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">

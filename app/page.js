@@ -1,6 +1,8 @@
 // app/page.js
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -15,12 +17,12 @@ export default function Home() {
           <h1 className="text-4xl md:text-6xl text-white font-bold mb-4">
             Your Trusted Restaurant Supplies
           </h1>
-          <a
+          <Link
             href="/products"
             className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded shadow"
           >
             View Products
-          </a>
+          </Link>
         </div>
       </section>
 
@@ -33,76 +35,76 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
             {/* Disposable Containers */}
             <div className="bg-white rounded shadow overflow-hidden">
-              <img
+              <Image
                 src="/categories/containers.jpg"
                 alt="Disposable Containers"
                 className="w-full h-40 object-cover"
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Disposable Containers</h3>
-                <a href="/products/containers" className="text-blue-500 hover:underline">
+                <Link href="/products/containers" className="text-blue-500 hover:underline">
                   Shop Now
-                </a>
+                </Link>
               </div>
             </div>
 
             {/* Disposable Bowls */}
             <div className="bg-white rounded shadow overflow-hidden">
-              <img
+              <Image
                 src="/categories/bowls.jpg"
                 alt="Disposable Bowls"
                 className="w-full h-40 object-cover"
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Disposable Bowls</h3>
-                <a href="/products/bowls" className="text-blue-500 hover:underline">
+                <Link href="/products/bowls" className="text-blue-500 hover:underline">
                   Shop Now
-                </a>
+                </Link>
               </div>
             </div>
 
             {/* Cutlery */}
             <div className="bg-white rounded shadow overflow-hidden">
-              <img
+              <Image
                 src="/categories/cutlery.jpg"
                 alt="Cutlery"
                 className="w-full h-40 object-cover"
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Cutlery</h3>
-                <a href="/products/cutlery" className="text-blue-500 hover:underline">
+                <Link href="/products/cutlery" className="text-blue-500 hover:underline">
                   Shop Now
-                </a>
+                </Link>
               </div>
             </div>
 
             {/* Cups & Lids */}
             <div className="bg-white rounded shadow overflow-hidden">
-              <img
+              <Image
                 src="/categories/cups.jpg"
                 alt="Cups & Lids"
                 className="w-full h-40 object-cover"
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Cups & Lids</h3>
-                <a href="/products/cups" className="text-blue-500 hover:underline">
+                <Link href="/products/cups" className="text-blue-500 hover:underline">
                   Shop Now
-                </a>
+                </Link>
               </div>
             </div>
 
             {/* Napkins */}
             <div className="bg-white rounded shadow overflow-hidden">
-              <img
+              <Image
                 src="/categories/napkins.jpg"
                 alt="Napkins"
                 className="w-full h-40 object-cover"
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Napkins</h3>
-                <a href="/products/napkins" className="text-blue-500 hover:underline">
+                <Link href="/products/napkins" className="text-blue-500 hover:underline">
                   Shop Now
-                </a>
+                </Link>
               </div>
             </div>
           </div>
