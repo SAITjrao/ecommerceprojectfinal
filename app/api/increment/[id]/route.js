@@ -1,5 +1,4 @@
 import { sequelize } from '@/lib/database';
-import Product from '@/models/Product';
 
 export async function POST(request, { params }) {
   try {
