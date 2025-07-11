@@ -39,10 +39,15 @@ export default function Home() {
                 src="/categories/containers.jpg"
                 alt="Disposable Containers"
                 className="w-full h-40 object-cover"
+                width={400}
+                height={160}
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Disposable Containers</h3>
-                <Link href="/products/containers" className="text-blue-500 hover:underline">
+                <Link
+                  href="/products/containers"
+                  className="text-blue-500 hover:underline"
+                >
                   Shop Now
                 </Link>
               </div>
@@ -54,10 +59,15 @@ export default function Home() {
                 src="/categories/bowls.jpg"
                 alt="Disposable Bowls"
                 className="w-full h-40 object-cover"
+                width={400}
+                height={160}
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Disposable Bowls</h3>
-                <Link href="/products/bowls" className="text-blue-500 hover:underline">
+                <Link
+                  href="/products/bowls"
+                  className="text-blue-500 hover:underline"
+                >
                   Shop Now
                 </Link>
               </div>
@@ -69,10 +79,15 @@ export default function Home() {
                 src="/categories/cutlery.jpg"
                 alt="Cutlery"
                 className="w-full h-40 object-cover"
+                width={400}
+                height={160}
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Cutlery</h3>
-                <Link href="/products/cutlery" className="text-blue-500 hover:underline">
+                <Link
+                  href="/products/cutlery"
+                  className="text-blue-500 hover:underline"
+                >
                   Shop Now
                 </Link>
               </div>
@@ -84,10 +99,15 @@ export default function Home() {
                 src="/categories/cups.jpg"
                 alt="Cups & Lids"
                 className="w-full h-40 object-cover"
+                width={400}
+                height={160}
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Cups & Lids</h3>
-                <Link href="/products/cups" className="text-blue-500 hover:underline">
+                <Link
+                  href="/products/cups"
+                  className="text-blue-500 hover:underline"
+                >
                   Shop Now
                 </Link>
               </div>
@@ -99,10 +119,15 @@ export default function Home() {
                 src="/categories/napkins.jpg"
                 alt="Napkins"
                 className="w-full h-40 object-cover"
+                width={400}
+                height={160}
               />
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2">Napkins</h3>
-                <Link href="/products/napkins" className="text-blue-500 hover:underline">
+                <Link
+                  href="/products/napkins"
+                  className="text-blue-500 hover:underline"
+                >
                   Shop Now
                 </Link>
               </div>
