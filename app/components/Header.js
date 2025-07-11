@@ -32,14 +32,14 @@ export default function Header() {
           {/* Logo & Store Name */}
           <div className="flex items-center">
             <Image
-              src="/categories/supply-logo.jpg"
-              alt="Supply Logo"
-              className="h-10 w-auto mr-2"
-              width={40}
-              height={40}
+              src="/categories/logo.png"
+              alt="Grab n Go Logo"
+              className="h-10 w-auto ml-2"
+              width={141}
+              height={60}
             />
             <span className="text-2xl font-bold text-blue-500">
-              Supply Store
+              
             </span>
           </div>
 

@@ -12,7 +12,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-black opacity-50"></div>
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center">
           <h1 className="text-4xl md:text-6xl text-white font-bold mb-4">
-            Your Trusted Restaurant Supplies
+            Your Trusted Restaurant Supply Store
           </h1>
           <Link
             href="/products"
