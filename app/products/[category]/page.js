@@ -1,9 +1,9 @@
 "use client";
-import Header from "@/app/components/Header";
-import Footer from "@/app/components/Footer";
 import { useEffect, useState } from "react";
 import { useCart } from "@/app/context/CartContext";
 import React from "react";
+import Image from "next/image";
+import { Montserrat } from "next/font/google";
 
 export default function CategoryPage({ params }) {
   // Unwrap params with React.use() for Next.js 15+
@@ -94,15 +94,32 @@ export default function CategoryPage({ params }) {
                       key={uniqueId}
                       className="bg-white rounded-lg shadow hover:shadow-md transition p-6"
                     >
-                      <div className="flex justify-between items-center mb-2 space-x-2">
+                      {/* Product Image */}
+                      <div className="flex justify-center mb-4">
+                        {product.image_url ? (
+                          <Image
+                            src={`/products/${category}/${product.image_url}`}
+                            alt={product.name}
+                            width={160}
+                            height={160}
+                            className="rounded bg-white border"
+                            style={{ objectFit: "contain" }}
+                          />
+                        ) : (
+                          <div className="h-40 w-40 bg-gray-200 rounded flex items-center justify-center">
+                            <span className="text-gray-500">No Image</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center mb-2 space-x-6">
                         <h2 className="text-xl font-semibold text-center">
                           {product.name}
                         </h2>
-                        <p className="text-xl text-gray-600 pl-10">
+                        <p className="text-2xl text-gray-600 pl-10 font-bold">
                           ${product.price}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 mt-4">
+                      <div className="flex items-center mt-4 ml-2">
                         <label htmlFor={`qty-${uniqueId}`}>Qty:</label>
                         <input
                           id={`qty-${uniqueId}`}
@@ -115,13 +132,11 @@ export default function CategoryPage({ params }) {
                               [uniqueId]: Math.max(1, Number(e.target.value)),
                             }))
                           }
-                          className="w-16 border rounded px-2 py-1"
+                          className="w-16 border rounded px-3 py-1 ml-2"
                         />
-                      </div>
-                      <div className="flex justify-between items-center mt-4">
                         <button
                           onClick={() => handleAddToCart(product)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded ml-31"
                         >
                           Add to Cart
                         </button>
