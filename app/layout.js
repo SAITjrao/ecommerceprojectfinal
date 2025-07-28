@@ -1,8 +1,10 @@
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "./context/CartContext";
+import { AuthProvider } from "./context/AuthContext";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import CartNotification from "./components/CartNotification";
 
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["400", "700"] });
 
@@ -15,11 +17,14 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={montserrat.className}>
       <body className="antialiased min-h-screen flex flex-col">
-        <CartProvider>
-          <Header />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Header />
+            <main className="flex-grow">{children}</main>
+            <Footer />
+            <CartNotification />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );
