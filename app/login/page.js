@@ -21,7 +21,14 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json().catch(() => {
+        throw new Error("Invalid JSON response from server");
+      });
+
       console.log(data);
       if (data.success) {
         // Show success popup
@@ -32,7 +39,7 @@ export default function Login() {
       }
     } catch (err) {
       console.error("Login error:", err);
-      setErrorMsg("Failed to connect to server");
+      setErrorMsg(err.message || "Failed to connect to server");
     }
   };
 

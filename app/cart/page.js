@@ -61,14 +61,24 @@ export default function CartPage() {
                       <div className="w-20 h-20 bg-gray-100 rounded flex items-center justify-center overflow-hidden">
                         {item.image_url ? (
                           <Image
-                            src={item.image_url}
+                            src={
+                              item.image_url.startsWith("http")
+                                ? item.image_url
+                                : "/fallback-image.png"
+                            } // Use fallback if URL is invalid
                             alt={item.name}
                             width={80}
                             height={80}
                             className="object-cover"
                           />
                         ) : (
-                          <span className="text-gray-400">No Image</span>
+                          <Image
+                            src="/fallback-image.png" // Fallback image for missing URLs
+                            alt="No Image Available"
+                            width={80}
+                            height={80}
+                            className="object-cover"
+                          />
                         )}
                       </div>
                       <div className="flex-1">

@@ -139,6 +139,40 @@ export const CartProvider = ({ children }) => {
     // Optionally clear backend cart items as well
   };
 
+  // Add function to create an order
+  const createOrder = async () => {
+    if (!cartId || cart.length === 0) {
+      console.error("Cart is empty or cart ID is missing.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cart_id: cartId,
+          items: cart.map(({ product_id, id, quantity }) => ({
+            product_id: product_id || id,
+            quantity,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create order.");
+      }
+
+      const data = await response.json();
+      console.log("Order created successfully:", data);
+
+      // Clear the cart after order creation
+      clearCart();
+    } catch (error) {
+      console.error("Error creating order:", error);
+    }
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -147,6 +181,7 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         clearCart,
         updateQuantity,
+        createOrder, // Expose createOrder to the context
         cartId,
       }}
     >
