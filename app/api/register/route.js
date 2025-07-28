@@ -6,18 +6,16 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function POST(request) {
-  const { email, password } = await request.json();
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { email, password, name } = await request.json();
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { name },
+    },
+  });
   if (error) {
     return NextResponse.json({ success: false, message: error.message });
   }
-  // Get name from user_metadata
-  const name = data.user?.user_metadata?.name || data.user?.email;
-  return NextResponse.json({
-    success: true,
-    user: {
-      name,
-      email: data.user.email,
-    },
-  });
+  return NextResponse.json({ success: true });
 }
