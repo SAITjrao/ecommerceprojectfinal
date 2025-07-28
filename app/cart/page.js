@@ -1,13 +1,15 @@
 // app/cart/page.js
 "use client";
 import { useCart } from "@/app/context/CartContext";
+import { useAuth } from "@/app/context/AuthContext";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function CartPage() {
-  const { cart, removeFromCart, clearCart, addToCart, updateQuantity } =
+  const { cart, removeFromCart, clearCart, addToCart, updateQuantity, cartId } =
     useCart();
+  const { user } = useAuth();
   const [discountCode, setDiscountCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState(0);
 
@@ -37,6 +39,7 @@ export default function CartPage() {
     <main>
       <div className="max-w-4xl mx-auto p-8">
         <h1 className="text-3xl font-bold mb-6 text-center">Your Cart</h1>
+        
         {cart.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64">
             <p className="text-gray-600 text-lg mb-4">Your cart is empty.</p>
@@ -64,8 +67,8 @@ export default function CartPage() {
                             src={
                               item.image_url.startsWith("http")
                                 ? item.image_url
-                                : "/fallback-image.png"
-                            } // Use fallback if URL is invalid
+                                : "/categories/product1.jpg"
+                            } // Use fallback product image
                             alt={item.name}
                             width={80}
                             height={80}
@@ -73,8 +76,8 @@ export default function CartPage() {
                           />
                         ) : (
                           <Image
-                            src="/fallback-image.png" // Fallback image for missing URLs
-                            alt="No Image Available"
+                            src="/categories/product1.jpg" // Fallback to existing product image
+                            alt="Product Image"
                             width={80}
                             height={80}
                             className="object-cover"
