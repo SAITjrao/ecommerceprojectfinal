@@ -2,29 +2,21 @@
 "use client";
 import Link from "next/link";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
-import Image from 'next/image';
+import Image from "next/image";
 
 export default function Header() {
   const { cart } = useCart();
-  const [user, setUser] = useState(null);
+  const { user, signOut, loading } = useAuth();
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch("/api/me");
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        }
-      } catch (err) {
-        console.error("Failed to fetch user:", err);
-      }
-    };
-
-    fetchUser();
-  }, []);
+  const handleLogout = async () => {
+    const result = await signOut();
+    if (result.success) {
+      alert("Logged out successfully!");
+    }
+  };
   return (
     <div className="">
       <header className="bg-white shadow">
@@ -38,9 +30,7 @@ export default function Header() {
               width={141}
               height={60}
             />
-            <span className="text-2xl font-bold text-blue-500">
-              
-            </span>
+            <span className="text-2xl font-bold text-blue-500"></span>
           </div>
 
           {/* Navigation Links */}
@@ -48,8 +38,17 @@ export default function Header() {
             <Link href="/" className="text-gray-700 hover:text-blue-500">
               Home
             </Link>
-            <Link href="/products" className="text-gray-700 hover:text-blue-500">
+            <Link
+              href="/products"
+              className="text-gray-700 hover:text-blue-500"
+            >
               Products
+            </Link>
+            <Link
+              href="/essential-kits"
+              className="text-gray-700 hover:text-blue-500"
+            >
+              Essential Kits
             </Link>
             <Link href="/about" className="text-gray-700 hover:text-blue-500">
               About
@@ -61,20 +60,30 @@ export default function Header() {
 
           {/* Icons + user info */}
           <div className="flex space-x-4">
-            {user && (
-              <span className="text-sm text-gray-700 mt-2">
-                Hello, {user.first_name}
-              </span>
+            {user && !loading && (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-700">
+                  Hello, {user.email}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="text-sm text-red-600 hover:text-red-800"
+                >
+                  Logout
+                </button>
+              </div>
             )}
-            <Link href="/login">
-              <Image
-                src="/categories/login-icon.svg"
-                alt="Login Icon"
-                className="h-7 w-7"
-                width={28}
-                height={28}
-              />
-            </Link>
+            {!user && !loading && (
+              <Link href="/login">
+                <Image
+                  src="/categories/login-icon.svg"
+                  alt="Login Icon"
+                  className="h-7 w-7"
+                  width={28}
+                  height={28}
+                />
+              </Link>
+            )}
 
             <Link href="/cart" className="relative">
               <Image
