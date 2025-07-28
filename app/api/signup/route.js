@@ -11,7 +11,9 @@ export async function POST(req) {
     }
 
     // Ensure preferences column exists
-    const { error: columnError } = await supabase.rpc("ensure_preferences_column");
+    const { error: columnError } = await supabase.rpc(
+      "ensure_preferences_column"
+    );
     if (columnError) {
       console.error("Error ensuring preferences column:", columnError);
       return new Response(JSON.stringify({ error: "Database error." }), {
