@@ -5,6 +5,7 @@ import { fetchProducts } from "@/lib/fetchAllProducts";
 import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
 import { supabase } from "@/lib/supabaseClient"; // Import Supabase client
+import { useAuth } from "../context/AuthContext"; // Import authentication context
 
 const categories = ["cutlery", "bowls", "cups", "napkins", "containers"];
 
@@ -18,59 +19,168 @@ export default function ProductsPage() {
   const [totalProducts, setTotalProducts] = useState(0);
   const { addToCart, cart } = useCart();
   const [selectedQuantities, setSelectedQuantities] = useState({});
+  const [kits, setKits] = useState([]);
+  const [newKitName, setNewKitName] = useState("");
+  const [kitProducts, setKitProducts] = useState({});
+
+  const { user, loading: authLoading } = useAuth(); // Get the user object from the authentication context
 
   useEffect(() => {
     const fetchPreferences = async () => {
+      if (!user || !user.id) {
+        console.log("User not logged in, showing all products");
+        setPreferences([]); // Fallback to show all products
+        return;
+      }
+
       try {
-        const { data, error } = await supabase
-          .from("users")
-          .select("preferences")
-          .single(); // Fetch preferences for the current user
+        const { data: userPrefs, error } = await supabase
+          .from("user_preferences")
+          .select("preferred_categories")
+          .eq("user_id", user.id)
+          .single();
 
         if (error) {
-          console.error("Error fetching preferences:", error.message || error);
-          setError("Failed to load preferences.");
-          setPreferences([]); // Fallback to an empty array
+          console.log("No user preferences found, showing all products");
+          setPreferences([]); // Fallback to show all products
           return;
         }
 
-        setPreferences(data.preferences || []); // Use preferences or fallback to an empty array
+        setPreferences(userPrefs.preferred_categories || []);
+        console.log("Preferences:", userPrefs.preferred_categories);
       } catch (err) {
-        console.error("Unexpected error fetching preferences:", err);
-        setError("An unexpected error occurred.");
-        setPreferences([]); // Fallback to an empty array
+        console.error("Error fetching preferences:", err);
+        setPreferences([]); // Fallback to show all products
       }
     };
 
-    fetchPreferences();
-  }, []);
+    if (!authLoading) {
+      fetchPreferences();
+    }
+  }, [user, authLoading]);
 
   useEffect(() => {
     const getProducts = async () => {
       try {
         setLoading(true);
-        const { data, count } = await fetchProducts(page, pageSize);
 
-        // Filter products based on preferences
-        const filteredProducts = data.filter((product) =>
-          preferences.includes(product.category)
-        );
+        // Try to fetch from Supabase first
+        try {
+          const { data, count } = await fetchProducts(page, pageSize);
 
-        setProducts(filteredProducts);
-        setTotalProducts(filteredProducts.length);
+          // Filter products based on preferences or show all if preferences are empty
+          const filteredProducts =
+            preferences.length > 0
+              ? data.filter((product) => preferences.includes(product.category))
+              : data;
+
+          setProducts(filteredProducts);
+          setTotalProducts(filteredProducts.length);
+        } catch (supabaseError) {
+          console.log(
+            "Supabase products not available, using sample products:",
+            supabaseError
+          );
+
+          // Fallback sample products for testing cart
+          const sampleProducts = [
+            {
+              id: 1,
+              product_id: 1,
+              name: "Plastic Fork Set",
+              price: 5.99,
+              category: "cutlery",
+              description: "Set of 50 plastic forks",
+              stock: 100,
+            },
+            {
+              id: 2,
+              product_id: 2,
+              name: "Paper Bowl Large",
+              price: 8.99,
+              category: "bowls",
+              description: "Large disposable paper bowls",
+              stock: 75,
+            },
+            {
+              id: 3,
+              product_id: 3,
+              name: "Coffee Cup 12oz",
+              price: 12.99,
+              category: "cups",
+              description: "Insulated coffee cups",
+              stock: 50,
+            },
+            {
+              id: 4,
+              product_id: 4,
+              name: "Dinner Napkins",
+              price: 3.99,
+              category: "napkins",
+              description: "Premium dinner napkins",
+              stock: 200,
+            },
+            {
+              id: 5,
+              product_id: 5,
+              name: "Food Container Set",
+              price: 15.99,
+              category: "containers",
+              description: "Reusable food containers",
+              stock: 30,
+            },
+          ];
+
+          // Filter sample products based on preferences
+          const filteredSampleProducts =
+            preferences.length > 0
+              ? sampleProducts.filter((product) =>
+                  preferences.includes(product.category)
+                )
+              : sampleProducts;
+
+          setProducts(filteredSampleProducts);
+          setTotalProducts(filteredSampleProducts.length);
+        }
       } catch (err) {
-        setError(err.message);
+        console.error("Error fetching products:", err);
+        setError("Failed to fetch products.");
       } finally {
         setLoading(false);
       }
     };
 
-    if (preferences.length > 0) {
-      getProducts();
-    }
+    getProducts();
   }, [page, pageSize, preferences]);
 
-  const totalPages = Math.ceil(totalProducts / pageSize);
+  useEffect(() => {
+    const fetchKits = async () => {
+      if (!user || !user.id) {
+        console.log("User is not logged in, skipping kits fetch.");
+        return;
+      }
+
+      try {
+        const { data: kits, error } = await supabase
+          .from("kits")
+          .select("*")
+          .eq("auth_user_id", user.id); // Use auth_user_id to link with Supabase auth
+
+        if (error) {
+          console.log("No kits found for user:", error);
+          return;
+        }
+
+        setKits(kits || []);
+      } catch (err) {
+        console.error("Error fetching kits:", err);
+      }
+    };
+
+    if (user && !authLoading) {
+      fetchKits();
+    }
+  }, [user, authLoading]);
 
   const handleAddToCart = (product) => {
     const normalizedProduct = {
@@ -82,6 +192,54 @@ export default function ProductsPage() {
     addToCart(normalizedProduct, qty);
     alert(`Added ${qty} × ${normalizedProduct.name} to Cart`);
   };
+
+  const handleSaveKit = async () => {
+    if (!user || !user.id) {
+      console.error("User is not logged in or missing ID.");
+      alert("You must be logged in to save a kit.");
+      return;
+    }
+
+    if (!newKitName.trim()) {
+      alert("Please enter a kit name.");
+      return;
+    }
+
+    if (Object.keys(kitProducts).length === 0) {
+      alert("Please add products to the kit before saving.");
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from("kits").insert({
+        auth_user_id: user.id, // Use auth_user_id to link with Supabase auth
+        kit_name: newKitName,
+        products: Object.keys(kitProducts),
+        quantities: Object.values(kitProducts),
+      });
+
+      if (error) {
+        throw new Error("Failed to save kit.");
+      }
+
+      setKits((prev) => [
+        ...prev,
+        {
+          kit_name: newKitName,
+          products: Object.keys(kitProducts),
+          quantities: Object.values(kitProducts),
+        },
+      ]);
+      setNewKitName("");
+      setKitProducts({});
+      alert("Kit saved successfully!");
+    } catch (err) {
+      console.error("Error saving kit:", err);
+      alert("Failed to save kit. Please try again.");
+    }
+  };
+
+  const totalPages = Math.ceil(totalProducts / pageSize);
 
   if (loading) {
     return (
@@ -208,6 +366,42 @@ export default function ProductsPage() {
               })}
             </div>
           )}
+        </div>
+
+        {/* Essential Kits Section */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">Essential Kits</h2>
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Kit Name"
+              value={newKitName}
+              onChange={(e) => setNewKitName(e.target.value)}
+              className="border rounded px-2 py-1 mr-2"
+            />
+            <button
+              onClick={handleSaveKit}
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+            >
+              Save Kit
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {kits.map((kit) => (
+              <div key={kit.id} className="p-4 border rounded shadow">
+                <h3 className="text-lg font-bold mb-2">{kit.kit_name}</h3>
+                <ul>
+                  {kit.products &&
+                    kit.quantities &&
+                    kit.products.map((product, idx) => (
+                      <li key={idx}>
+                        {product} - Qty: {kit.quantities[idx] || 0}
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </main>

@@ -1,54 +1,97 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [businessType, setBusinessType] = useState("");
+  const [preferences, setPreferences] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isSignup, setIsSignup] = useState(false);
   const router = useRouter();
+  const { signIn, signUp } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMsg("");
 
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const result = await signIn(email, password);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json().catch(() => {
-        throw new Error("Invalid JSON response from server");
-      });
-
-      console.log(data);
-      if (data.success) {
-        // Show success popup
-        alert(`Login successful!\nWelcome ${data.user.first_name} ${data.user.last_name}`);
-        router.push("/");
+      if (result.success) {
+        alert(`Login successful! Welcome back.`);
+        router.push("/products");
       } else {
-        setErrorMsg(data.message || "Login failed");
+        setErrorMsg(result.error || "Login failed");
       }
     } catch (err) {
       console.error("Login error:", err);
-      setErrorMsg(err.message || "Failed to connect to server");
+      setErrorMsg("Failed to connect to server");
+    }
+  };
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    if (!businessType || preferences.length === 0) {
+      alert("Please select a business type and at least one preference.");
+      return;
+    }
+
+    if (!email || !password) {
+      alert("Please enter email and password.");
+      return;
+    }
+
+    console.log("Signup Data:", { email, password, businessType, preferences });
+
+    try {
+      // First create the auth user
+      const authResult = await signUp(email, password, {
+        businessType,
+        preferences,
+      });
+
+      if (!authResult.success) {
+        throw new Error(authResult.error);
+      }
+
+      // Then save additional user data to your users table
+      const { error: userDataError } = await supabase.from("users").insert({
+        auth_user_id: authResult.user.id,
+        business_type: businessType,
+        preferences: preferences,
+        email: email,
+      });
+
+      if (userDataError) {
+        console.error("Error saving user data:", userDataError);
+        // Note: Auth user is still created even if this fails
+      }
+
+      alert(
+        "Signup successful! Please check your email to verify your account."
+      );
+      router.push("/products");
+    } catch (error) {
+      console.error("Error during signup:", error);
+      alert(`Signup failed: ${error.message}`);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
-        
-        <form onSubmit={handleLogin} className="space-y-4">
+        <h1 className="text-2xl font-bold mb-6 text-center">
+          {isSignup ? "Sign Up" : "Login"}
+        </h1>
+
+        <form
+          onSubmit={isSignup ? handleSignup : handleLogin}
+          className="space-y-4"
+        >
           <div>
             <label className="block mb-1">Email:</label>
             <input
@@ -71,17 +114,75 @@ export default function Login() {
             />
           </div>
 
-          {errorMsg && (
-            <div className="text-red-500 text-sm">{errorMsg}</div>
+          {isSignup && (
+            <>
+              <div>
+                <label className="block mb-1">Business Type:</label>
+                <select
+                  required
+                  className="w-full p-2 border rounded"
+                  value={businessType}
+                  onChange={(e) => setBusinessType(e.target.value)}
+                >
+                  <option value="">Select Business Type</option>
+                  <option value="restaurant">Restaurant</option>
+                  <option value="catering">Catering</option>
+                  <option value="cafe">Cafe</option>
+                  <option value="food_truck">Food Truck</option>
+                  <option value="bakery">Bakery</option>
+                  <option value="hotel">Hotel</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block mb-1">Product Preferences:</label>
+                <div className="space-y-2">
+                  {["cutlery", "bowls", "cups", "napkins", "containers"].map(
+                    (category) => (
+                      <label key={category} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          className="mr-2"
+                          checked={preferences.includes(category)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setPreferences([...preferences, category]);
+                            } else {
+                              setPreferences(
+                                preferences.filter((p) => p !== category)
+                              );
+                            }
+                          }}
+                        />
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </label>
+                    )
+                  )}
+                </div>
+              </div>
+            </>
           )}
+
+          {errorMsg && <div className="text-red-500 text-sm">{errorMsg}</div>}
 
           <button
             type="submit"
             className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
           >
-            Login
+            {isSignup ? "Signup" : "Login"}
           </button>
         </form>
+
+        <div className="text-center mt-4">
+          <button
+            onClick={() => setIsSignup(!isSignup)}
+            className="text-blue-500 hover:underline"
+          >
+            {isSignup
+              ? "Already have an account? Login"
+              : "Don't have an account? Signup"}
+          </button>
+        </div>
       </div>
     </div>
   );
