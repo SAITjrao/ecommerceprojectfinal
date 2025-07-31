@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -25,7 +26,7 @@ export default function Login() {
       console.log(data);
       if (data.success) {
         // Show success popup
-        alert(`Login successful!\nWelcome ${data.user.first_name} ${data.user.last_name}`);
+        alert(`Login successful!\nWelcome ${data.user.name}`);
         router.push("/");
       } else {
         setErrorMsg(data.message || "Login failed");
@@ -74,6 +75,12 @@ export default function Login() {
           >
             Login
           </button>
+
+          <div className="block text-center mt-4">
+            <Link href="/register" className="text-blue-500 hover:underline">
+              Don&apos;t have an account? Register here
+            </Link>
+          </div>
         </form>
       </div>
     </div>

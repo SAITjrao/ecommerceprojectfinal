@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const router = useRouter();
 
@@ -16,7 +17,7 @@ export default function Register() {
       const response = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({ email, password, firstName, lastName }),
       });
       const data = await response.json();
       if (data.success) {
@@ -35,16 +36,29 @@ export default function Register() {
       <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold mb-6 text-center">Register</h1>
         <form onSubmit={handleRegister} className="space-y-4">
-          <div>
-            <label className="block mb-1">Name:</label>
-            <input
-              type="text"
-              required
-              className="w-full p-2 border rounded"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+          <div className="flex space-x-12">
+            <div>
+              <label className="block mb-1">First Name:</label>
+              <input
+                type="text"
+                required
+                className="w-42 p-2 border rounded"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block mb-1">Last Name:</label>
+                <input
+                  type="text"
+                  required
+                  className="w-42 p-2 border rounded"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
+            </div>
           </div>
+          
           <div>
             <label className="block mb-1">Email:</label>
             <input
@@ -55,7 +69,7 @@ export default function Register() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-          <div>
+          <div className="mb-10">
             <label className="block mb-1">Password:</label>
             <input
               type="password"
@@ -65,12 +79,13 @@ export default function Register() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+          
           {errorMsg && (
             <div className="text-red-500 text-sm">{errorMsg}</div>
           )}
           <button
             type="submit"
-            className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600"
+            className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
           >
             Register
           </button>
