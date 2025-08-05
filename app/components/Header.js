@@ -45,14 +45,17 @@ export default function Header() {
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
           {/* Logo & Store Name */}
-          <div className="flex items-center">
-            <Image
-              src="/categories/logo.png"
-              alt="Grab n Go Logo"
-              className="h-10 w-auto ml-2"
-              width={141}
-              height={60}
-            />
+          <div className="flex items-center mt-1">
+            <Link href="/">
+              <Image
+                src="/categories/logo.png"
+                alt="Grab n Go Logo"
+                className="h-10 w-auto"
+                width={160}
+                height={68}
+                style={{ height: "68px", width: "160px", objectFit: "contain", cursor: "pointer" }}
+              />
+            </Link>
             <span className="text-2xl font-bold text-blue-500"></span>
           </div>
 
