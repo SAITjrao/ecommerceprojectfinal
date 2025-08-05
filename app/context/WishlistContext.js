@@ -45,6 +45,21 @@ export const WishlistProvider = ({ children }) => {
     localStorage.setItem("wishlist", JSON.stringify(wishlist));
   }, [wishlist]);
 
+  // fetch user from server
+  const fetchUser = async () => {
+  try {
+    const response = await fetch("/api/me");
+    if (response.ok) {
+      const data = await response.json();
+      if (data.authenticated && data.user) {
+        setUserId(data.user.id);
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching user:", error);
+  }
+  };
+
   // Load wishlist from server - memoized to prevent infinite calls
   const loadWishlist = useCallback(async () => {
     if (!userId || hasLoaded) return;
@@ -191,6 +206,7 @@ export const WishlistProvider = ({ children }) => {
         clearWishlist,
         loading,
         userId,
+        fetchUser,
       }}
     >
       {children}

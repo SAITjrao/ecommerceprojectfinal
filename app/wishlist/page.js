@@ -8,7 +8,13 @@ import { useCart } from "../context/CartContext";
 import WishlistButton from "../components/WishlistButton";
 
 export default function WishlistPage() {
-  const { wishlist, loading, userId } = useWishlist();
+  // Add fallback defaults to prevent destructuring errors
+  const wishlistContext = useWishlist?.() || {};
+  const {
+    wishlist = [],
+    loading = false,
+    userId = null,
+  } = wishlistContext;
   const { addToCart } = useCart();
   const [selectedQuantities, setSelectedQuantities] = useState({});
 

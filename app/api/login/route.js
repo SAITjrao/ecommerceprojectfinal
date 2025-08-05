@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, userAgent } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getUser } from '@/lib/getUser';
 
@@ -8,24 +8,56 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function POST(request) {
   const { email, password } = await request.json();
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    return NextResponse.json({ success: false, message: error.message });
-  }
 
-  const { data: userData, error: userError } = await getUser(data.user.email);
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
 
-  if (userError || !userData) {
-    return NextResponse.json({ success: false, message: "User profile not found." });
-  }
+    if (error) {
+      return NextResponse.json({ success: false, message: error.message });
+    }
 
-  const name = `${userData.fname} ${userData.lname}`;
+    const { data: userData, error: userError } = await getUser(data.user.email);
 
-  return NextResponse.json({
-    success: true,
-    user: {
+    if (userError || !userData) {
+      return NextResponse.json({ success: false, message: "User profile not found." });
+    }
+
+    function capitalize(str) {
+      if (!str) return "";
+      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    }
+
+    // get user's name
+    const name = `${capitalize(userData.fname)} ${capitalize(userData.lname)}`;
+
+    // Create user object with ID
+    const user = {
+      id: data.user.id, // This is the UUID
       name,
       email: data.user.email,
-    },
-  });
+    };
+
+    // Set session cookie
+    const response = NextResponse.json({
+      success: true,
+      user,
+    });
+
+    response.cookies.set("session", JSON.stringify(user), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+    return response;
+  } catch (error) {
+    console.error("Login error:", error);
+    return NextResponse.json({
+      success: false,
+      message: "Login failed. Please try again.",
+    });
+  }
 }

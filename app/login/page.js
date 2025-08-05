@@ -28,6 +28,7 @@ export default function Login() {
         // Show success popup
         alert(`Login successful!\nWelcome ${data.user.name}`);
         router.push("/");
+        window.location.reload();
       } else {
         setErrorMsg(data.message || "Login failed");
       }

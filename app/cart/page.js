@@ -50,8 +50,7 @@ export default function CartPage() {
           <>
             <ul className="divide-y mb-6">
               {cart.map((item, idx) => {
-                const uniqueId =
-                  item.product_id || item.id || `${item.name}-${idx}`;
+                const uniqueId = item.id || item.id || `${item.name}-${idx}`;
                 return (
                   <li
                     key={uniqueId}
@@ -61,7 +60,9 @@ export default function CartPage() {
                       <div className="w-20 h-20 bg-gray-100 rounded flex items-center justify-center overflow-hidden">
                         {item.image_url ? (
                           <Image
-                            src={item.image_url}
+                            src={`/products/${item.category || "all"}/${
+                              item.image_url
+                            }`}
                             alt={item.name}
                             width={80}
                             height={80}

@@ -42,7 +42,6 @@ export default function CategoryPage({ params }) {
     const uniqueId = normalizedProduct.product_id;
     const qty = selectedQuantities[uniqueId] || 1;
     addToCart(normalizedProduct, qty);
-    alert(`Added ${qty} × ${normalizedProduct.name} to Cart`);
   };
 
   if (loading) return <div>Loading products...</div>;
