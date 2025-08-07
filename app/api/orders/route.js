@@ -8,7 +8,7 @@ const supabase = createClient(
 
 export async function POST(request) {
   try {
-    const { user_id, items, total_amount } = await request.json();
+    const { user_id, items, total_amount, tax } = await request.json();
 
     // Validate input
     if (!user_id || !items || !Array.isArray(items) || items.length === 0) {
@@ -28,6 +28,7 @@ export async function POST(request) {
           status: "pending",
           payment_status: "pending",
           order_date: new Date().toISOString(),
+          tax
         },
       ])
       .select()

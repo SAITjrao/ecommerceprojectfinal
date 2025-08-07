@@ -82,6 +82,7 @@ node scripts/clearProducts.js
 - `status` (VARCHAR) - Order status
 - `order_date` (TIMESTAMP) - Order date
 - `payment_status` (VARCHAR) - Payment status
+- `tax_amount` (INTEGER) - Tax Amount
 
 ### Order Items Table
 

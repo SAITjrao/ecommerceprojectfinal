@@ -6,11 +6,13 @@ import { useWishlist } from "../context/WishlistContext";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import CartPage from "@/app/cart/page";
 
 export default function Header() {
   const { cart } = useCart();
   const { wishlist, userId } = useWishlist();
   const [user, setUser] = useState(null);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const router = useRouter();
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const wishlistCount = wishlist.length;
@@ -31,6 +33,17 @@ export default function Header() {
     fetchUser();
   }, []);
 
+  useEffect(() => {
+    if (isCartOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isCartOpen]);
+
   const handleLogout = async () => {
     try {
       await fetch("/api/logout", { method: "POST" });
@@ -40,8 +53,9 @@ export default function Header() {
       console.error("Logout error:", err);
     }
   };
+
   return (
-    <div className="">
+    <div className="sticky top-0 z-50">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
           {/* Logo & Store Name */}
@@ -154,23 +168,65 @@ export default function Header() {
               </Link>
             )}
 
-            <Link href="/cart" className="relative cursor-pointer">
-              <Image
-                src="/categories/cart-icon.svg"
-                alt="Cart Icon"
-                className="h-7 w-7"
-                width={28}
-                height={28}
-              />
-              {totalItems > 0 && (
-                <span className="absolute -top-0.5 -right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                  {totalItems}
-                </span>
-              )}
-            </Link>
+            <div className="relative cursor-pointer">
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="bg-transparent border-none p-0 m-0"
+                aria-label="Open Cart"
+              >
+                <Image
+                  src="/categories/cart-icon.svg"
+                  alt="Cart Icon"
+                  className="h-7 w-7"
+                  width={28}
+                  height={28}
+                />
+                {totalItems > 0 && (
+                  <span className="absolute -top-0.5 -right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </header>
+
+      {/* Cart Side Modal */}
+      {isCartOpen && (
+        <div
+          className="fixed inset-0 z-50 flex justify-end bg-black bg-opacity-30"
+          onClick={() => setIsCartOpen(false)}
+        >
+          <div
+            className="bg-white w-full max-w-3xl h-full shadow-lg p-8 overflow-y-auto relative"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl"
+              onClick={() => setIsCartOpen(false)}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <CartPage setIsCartOpen={setIsCartOpen} router={router} />
+            {cart.length > 0 && (
+              <div className="flex justify-center mt-4">
+                <button
+                  className="w-3/4 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded shadow disabled:bg-gray-400"
+                  disabled={cart.length === 0}
+                  onClick={() => {
+                    setIsCartOpen(false);
+                    router.push("/checkout");
+                  }}
+                >
+                  Checkout
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

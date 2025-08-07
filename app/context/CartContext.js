@@ -7,6 +7,8 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [cartId, setCartId] = useState(null);
+  const [discountCode, setDiscountCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState(0);
   const isFirstLoad = useRef(true);
 
   // Load cart and cartId from localStorage if they exist
@@ -147,6 +149,10 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         clearCart,
         updateQuantity,
+        discountCode,
+        setDiscountCode,
+        appliedDiscount,
+        setAppliedDiscount,
         cartId,
       }}
     >

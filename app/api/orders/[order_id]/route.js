@@ -6,9 +6,10 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
 );
 
-export async function GET(request, { params }) {
+export async function GET(request, context) {
   try {
-    const { order_id } = params;
+    const { params } = context;
+    const { order_id } = await params; // Await params before using
 
     if (!order_id) {
       return NextResponse.json(
@@ -59,6 +60,7 @@ export async function GET(request, { params }) {
       total_amount: order.total_amount,
       status: order.status,
       order_date: order.order_date,
+      tax: order.tax,
       payment_status: order.payment_status,
       items: order.orderitems.map((item) => ({
         id: item.id,
