@@ -35,6 +35,16 @@ export default function CartPage() {
 
   return (
     <main>
+      <style jsx>{`
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        input[type="number"] {
+          -moz-appearance: textfield;
+        }
+      `}</style>
       <div className="max-w-4xl mx-auto p-8">
         <h1 className="text-3xl font-bold mb-6 text-center">Your Cart</h1>
         {cart.length === 0 ? (
@@ -48,16 +58,16 @@ export default function CartPage() {
           </div>
         ) : (
           <>
-            <ul className="divide-y mb-6">
+            <ul className="mb-6">
               {cart.map((item, idx) => {
                 const uniqueId = item.id || item.id || `${item.name}-${idx}`;
                 return (
                   <li
                     key={uniqueId}
-                    className="flex flex-col md:flex-row justify-between py-6 items-center bg-white rounded-lg shadow mb-4 p-4 gap-4"
+                    className="flex flex-col md:flex-row justify-between py-6 items-center bg-white rounded-lg mb-4 p-4 gap-4"
                   >
                     <div className="flex items-center gap-4 w-full md:w-2/3">
-                      <div className="w-20 h-20 bg-gray-100 rounded flex items-center justify-center overflow-hidden">
+                      <div className="w-20 h-20 bg-white rounded flex items-center justify-center overflow-hidden">
                         {item.image_url ? (
                           <Image
                             src={`/products/${item.category || "all"}/${
@@ -66,7 +76,7 @@ export default function CartPage() {
                             alt={item.name}
                             width={80}
                             height={80}
-                            className="object-cover"
+                            className="object-contain"
                           />
                         ) : (
                           <span className="text-gray-400">No Image</span>
@@ -106,7 +116,7 @@ export default function CartPage() {
                           +
                         </button>
                       </div>
-                      <span className="font-semibold text-lg text-blue-600">
+                      <span className="font-semibold text-lg">
                         ${(item.price * item.quantity).toFixed(2)}
                       </span>
                       <button
