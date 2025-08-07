@@ -195,7 +195,7 @@ export default function Header() {
       {/* Cart Side Modal */}
       {isCartOpen && (
         <div
-          className="fixed inset-0 z-50 flex justify-end bg-black bg-opacity-30"
+          className="fixed inset-0 z-50 flex justify-end bg-black/40"
           onClick={() => setIsCartOpen(false)}
         >
           <div
