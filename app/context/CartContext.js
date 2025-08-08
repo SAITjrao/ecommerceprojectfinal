@@ -138,7 +138,7 @@ export const CartProvider = ({ children }) => {
   // Clear the cart
   const clearCart = () => {
     setCart([]);
-    localStorage.removeItem("cart"); // If you use localStorage for cart
+    localStorage.removeItem("cart"); 
   };
 
   return (
