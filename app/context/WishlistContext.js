@@ -84,10 +84,10 @@ export const WishlistProvider = ({ children }) => {
 
   // Load wishlist when userId changes
   useEffect(() => {
-    if (userId && !hasLoaded) {
-      loadWishlist();
+    if (userId) {
+      loadWishlist(userId);
     }
-  }, [userId, hasLoaded, loadWishlist]);
+  }, [userId]);
 
   // Add product to wishlist
   const addToWishlist = async (product) => {

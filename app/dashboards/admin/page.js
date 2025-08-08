@@ -17,12 +17,14 @@ import {
 import "chartjs-adapter-date-fns";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/app/context/CartContext";
+import { useWishlist } from "@/app/context/WishlistContext"; // Import Wishlist context
 
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend, TimeScale);
 
 export default function AdminDashboard() {
   const router = useRouter();
   const { clearCart } = useCart();
+  const { clearWishlist } = useWishlist(); // Add this if you have a wishlist context
   const [activeTab, setActiveTab] = useState("products");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -358,6 +360,25 @@ export default function AdminDashboard() {
     }
   };
 
+  // Add this function to handle product deletion
+  const deleteProduct = async (productId) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    try {
+      const res = await fetch(`/api/products/${productId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (data.success) {
+        loadProducts(); // Refresh product list
+      } else {
+        alert(data.error || "Failed to delete product.");
+      }
+    } catch (err) {
+      alert("Error deleting product.");
+    }
+  };
+
   const [logoutLoading, setLogoutLoading] = useState(false);
 
   const handleLogout = async () => {
@@ -365,6 +386,7 @@ export default function AdminDashboard() {
     try {
       await fetch("/api/logout", { method: "POST", credentials: "include" });
       clearCart();
+      clearWishlist(); // Clear wishlist on logout
       router.replace("/login");
     } catch (err) {
       // Optionally show error
@@ -646,7 +668,7 @@ export default function AdminDashboard() {
                         >
                           Edit
                         </button>
-                        <button className="text-red-600 hover:text-red-900">
+                        <button className="text-red-600 hover:text-red-900" onClick={() => deleteProduct(product.id)}>
                           Delete
                         </button>
                       </td>

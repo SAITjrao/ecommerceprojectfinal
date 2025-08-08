@@ -25,9 +25,9 @@ export default function CategoryPage({ params }) {
         const response = await fetch(`/api/products`);
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
-        const filteredProducts = data.data.filter(
-          (product) => product.category?.toLowerCase() === category.toLowerCase()
-        );
+        const filteredProducts = (data.products || []).filter(
+  (product) => product.category?.toLowerCase() === category.toLowerCase()
+);
         setProducts(filteredProducts);
         const uniqueMaterials = [
           ...new Set(filteredProducts.map((product) => product.material)),

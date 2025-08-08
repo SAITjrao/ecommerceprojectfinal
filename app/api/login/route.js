@@ -39,7 +39,7 @@ export async function POST(request) {
       name,
       email: data.user.email,
       access_token: data.session.access_token,
-      is_admin: userData.is_admin, // <-- Add this line
+      is_admin: userData.is_admin,
     };
 
     // Set session cookie

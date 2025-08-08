@@ -133,26 +133,33 @@ export default function Header() {
                 <span className="text-sm text-gray-700">
                   Hello, {user.fname || user.name}
                 </span>
+                {/* Profile Icon - Green when logged in */}
                 <button
-                  onClick={handleLogout}
-                  className="text-sm text-red-600 hover:text-red-800 cursor-pointer"
+                  className="cursor-pointer bg-transparent border-none p-0"
+                  onClick={() => {
+                    if (user.is_admin === true || user.is_admin === "true") {
+                      router.push("/dashboards/admin");
+                    } else {
+                      router.push("/dashboards/user");
+                    }
+                  }}
+                  aria-label="Profile"
                 >
-                  Logout
+                  <Image
+                    src="/categories/login-icon.svg"
+                    alt="Profile Icon"
+                    className="h-7 w-7"
+                    width={28}
+                    height={28}
+                    style={{ filter: "invert(37%) sepia(98%) saturate(749%) hue-rotate(85deg) brightness(95%) contrast(90%)" }} // Makes icon green
+                  />
                 </button>
               </>
             ) : (
               <button
                 className="cursor-pointer bg-transparent border-none p-0"
                 onClick={() => {
-                  if (user) {
-                    if (user.is_admin === true || user.is_admin === "true") {
-                      router.push("/dashboards/admin");
-                    } else {
-                      router.push("/dashboards/user");
-                    }
-                  } else {
-                    router.push("/login");
-                  }
+                  router.push("/login");
                 }}
                 aria-label="Login"
               >
@@ -200,7 +207,7 @@ export default function Header() {
                 <Image
                   src="/categories/cart-icon.svg"
                   alt="Cart Icon"
-                  className="h-7 w-7"
+                  className="h-7 w-7 relative cursor-pointer"
                   width={28}
                   height={28}
                 />

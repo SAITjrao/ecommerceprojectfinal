@@ -63,3 +63,18 @@ export async function GET(request, context) {
     );
   }
 }
+
+export async function DELETE(request, { params }) {
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  const { id } = params;
+
+  const { error } = await supabase
+    .from("products")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    return Response.json({ success: false, error: error.message }, { status: 500 });
+  }
+  return Response.json({ success: true });
+}

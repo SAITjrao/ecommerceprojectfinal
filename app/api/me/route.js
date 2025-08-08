@@ -7,7 +7,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export async function GET() {
   const cookieStore = cookies();
-  const accessToken = cookieStore.get("access_token");
+  const accessToken = await cookieStore.get("access_token");
 
   if (!accessToken) {
     return NextResponse.json({ authenticated: false }, { status: 401 });

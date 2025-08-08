@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useWishlist } from "@/app/context/WishlistContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -10,6 +11,7 @@ export default function Login() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { loadWishlist } = useWishlist();
 
   // Check if user is already logged in on mount
   useEffect(() => {
@@ -52,11 +54,12 @@ export default function Login() {
 
       const data = await response.json();
       if (data.success) {
-        // Handle both boolean and string "true" for is_admin
+        localStorage.setItem("user", JSON.stringify(data.user));
+        loadWishlist(data.user.id);
         if (data.user.is_admin === true || data.user.is_admin === "true") {
           router.push("/dashboards/admin");
         } else {
-          router.push("/dashboards/user");
+          window.location.replace("/dashboards/user");
         }
       } else {
         setErrorMsg(data.message || "Login failed");

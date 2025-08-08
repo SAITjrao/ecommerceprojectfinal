@@ -1,11 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useCart } from "@/app/context/CartContext";
+import { useWishlist } from "@/app/context/WishlistContext";
 
 export default function UserDashboard() {
   const [activeTab, setActiveTab] = useState("orders");
   const [orders, setOrders] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [logoutLoading, setLogoutLoading] = useState(false);
+  const router = useRouter();
+  const { clearCart } = useCart();
+  const { clearWishlist } = useWishlist();
 
   // Get user ID from localStorage (or context)
   const userId = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user"))?.id : null;
@@ -41,9 +48,32 @@ export default function UserDashboard() {
     fetchData();
   }, [activeTab, userId]);
 
+  const handleLogout = async () => {
+    setLogoutLoading(true);
+    try {
+      await fetch("/api/logout", { method: "POST", credentials: "include" });
+      clearCart();
+      clearWishlist();
+      localStorage.removeItem("user");
+      window.location.replace("/login");
+    } catch (err) {
+    } finally {
+      setLogoutLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">User Dashboard</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">User Dashboard</h1>
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold"
+          disabled={logoutLoading}
+        >
+          {logoutLoading ? "Logging out..." : "Logout"}
+        </button>
+      </div>
       <div className="flex space-x-4 mb-6">
         <button
           className={`px-4 py-2 rounded ${activeTab === "orders" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
