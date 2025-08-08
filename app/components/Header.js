@@ -13,6 +13,7 @@ export default function Header() {
   const { wishlist, userId } = useWishlist();
   const [user, setUser] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const wishlistCount = wishlist.length;
@@ -51,6 +52,14 @@ export default function Header() {
       router.push("/");
     } catch (err) {
       console.error("Logout error:", err);
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchTerm("");
     }
   };
 
@@ -116,6 +125,23 @@ export default function Header() {
               Contact
             </Link>
           </nav>
+
+          {/* Search Bar */}
+          <form onSubmit={handleSearch} className="flex items-center mx-4">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="Search products..."
+              className="border rounded px-3 py-1 mr-2"
+            />
+            <button
+              type="submit"
+              className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+            >
+              Search
+            </button>
+          </form>
 
           {/* Icons + user info */}
           <div className="flex space-x-4 items-center">
