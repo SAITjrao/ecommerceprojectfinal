@@ -24,7 +24,7 @@ ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip,
 export default function AdminDashboard() {
   const router = useRouter();
   const { clearCart } = useCart();
-  const { clearWishlist } = useWishlist(); // Add this if you have a wishlist context
+  const { clearWishlist } = useWishlist();
   const [activeTab, setActiveTab] = useState("products");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,7 +36,7 @@ export default function AdminDashboard() {
   const [totalOrders, setTotalOrders] = useState(0);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
-  const [userNames, setUserNames] = useState({}); // user_id: "First Last"
+  const [userNames, setUserNames] = useState({});
   const [salesData, setSalesData] = useState([]);
   const [salesLoading, setSalesLoading] = useState(false);
   const [salesError, setSalesError] = useState(null);
@@ -53,7 +53,7 @@ export default function AdminDashboard() {
     } else if (activeTab === "orders") {
       loadOrders();
     }
-  }, [productSearch, page, pageSize, activeTab]);
+  }, [productSearch, page, pageSize, activeTab,]);
 
   // Update loadProducts to accept a search query
   const loadProducts = async (search = "") => {
@@ -394,6 +394,11 @@ export default function AdminDashboard() {
       setLogoutLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadOrders();
+    loadProducts();
+  }, [loadOrders, loadProducts]);
 
   if (error) {
     return (

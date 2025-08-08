@@ -87,7 +87,7 @@ export const WishlistProvider = ({ children }) => {
     if (userId) {
       loadWishlist(userId);
     }
-  }, [userId]);
+  }, [userId, loadWishlist]);
 
   // Add product to wishlist
   const addToWishlist = async (product) => {
