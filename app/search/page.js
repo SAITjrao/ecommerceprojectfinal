@@ -1,7 +1,7 @@
 // app/search/SearchPage.js
 "use client";
 import { Suspense } from 'react';
-import SearchResults from './SearchResults';
+import SearchResults from './Results';
 
 export default function SearchPage() {
   return (
