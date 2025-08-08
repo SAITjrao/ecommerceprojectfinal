@@ -84,7 +84,7 @@ export default function ProductsPage() {
         (selectedMaterials.length === 0 ||
           selectedMaterials.includes(product.material))
     )
-    .sort((a, b) => a.price - b.price); // Example: sort by price ascending
+    .sort((a, b) => a.price - b.price);
 
   if (loading) {
     return (
@@ -106,7 +106,7 @@ export default function ProductsPage() {
     <main>
       <div className="flex">
         {/* Left-hand sidebar */}
-        <aside className="w-64 bg-white shadow rounded-lg p-6 mr-8 h-fit mt-25 ml-10 sticky top-8">
+        <aside className="w-64 bg-white shadow rounded-lg p-6 mr-8 h-fit mt-25 ml-10 sticky top-32">
           <h2 className="text-lg font-semibold mb-4">Filter & Sort</h2>
           <div className="flex flex-col gap-5">
             {/* Price Range */}
