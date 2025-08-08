@@ -96,6 +96,11 @@ export default function CartPage({ setIsCartOpen, router }) {
                         <p className="font-semibold text-lg pr-4">{item.name}</p>
                         <span className="font-semibold text-xl">${item.price}</span>
                       </div>
+                      {item.quantityPerCase && (
+                        <div className="text-gray-500 text-sm mb-2">
+                          {item.quantityPerCase} per case
+                        </div>
+                      )}
                       <div className="flex flex-col items-start">
                         <div className="flex items-center gap-2 mt-2">
                           <button

@@ -77,7 +77,7 @@ export const CartProvider = ({ children }) => {
         return updatedCart;
       } else {
         // Add as new item
-        const updatedCart = [...prevCart, { ...product, quantity }];
+        const updatedCart = [...prevCart, { ...product, quantityPerCase: product.quantity, quantity }];
         // Add to backend
         if (cartId) {
           fetch("/api/cart", {
