@@ -3,6 +3,20 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { fetchProducts } from "@/lib/fetchAllProducts";
+import { Line, Scatter } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+  TimeScale,
+} from "chart.js";
+import "chartjs-adapter-date-fns";
+
+ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend, TimeScale);
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("products");
@@ -16,6 +30,13 @@ export default function AdminDashboard() {
   const [totalOrders, setTotalOrders] = useState(0);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const [userNames, setUserNames] = useState({}); // user_id: "First Last"
+  const [salesData, setSalesData] = useState([]);
+  const [salesLoading, setSalesLoading] = useState(false);
+  const [salesError, setSalesError] = useState(null);
+  const [salesFilter, setSalesFilter] = useState("month"); // week, month, year, all
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
   useEffect(() => {
     if (activeTab === "products") {
@@ -116,6 +137,197 @@ export default function AdminDashboard() {
     (activeTab === "products" ? totalProducts : totalOrders) / pageSize
   );
 
+  // Fetch user names for orders
+  useEffect(() => {
+    async function fetchUserNames() {
+      if (orders.length === 0) return;
+      const newNames = { ...userNames };
+      const userIdsToFetch = orders
+        .map((order) => order.user_id)
+        .filter((id) => id && !newNames[id]);
+      if (userIdsToFetch.length === 0) return;
+
+      // Fetch all missing user names in parallel
+      await Promise.all(
+        userIdsToFetch.map(async (userId) => {
+          try {
+            const res = await fetch(`/api/users/${userId}`);
+            if (res.ok) {
+              const { data } = await res.json();
+              if (data && data.fname && data.lname) {
+                newNames[userId] = `${data.fname} ${data.lname}`;
+              }
+            }
+          } catch (err) {
+            // fallback to userId if fetch fails
+            newNames[userId] = userId.substring(0, 8) + "...";
+          }
+        })
+      );
+      setUserNames(newNames);
+    }
+    fetchUserNames();
+    // eslint-disable-next-line
+  }, [orders]);
+
+  // Fetch sales data for chart
+  useEffect(() => {
+    async function fetchSales() {
+      setSalesLoading(true);
+      setSalesError(null);
+      try {
+        const res = await fetch(`/api/orders/sales?range=${salesFilter}`);
+        if (!res.ok) throw new Error("Failed to fetch sales data");
+        const { data } = await res.json();
+        setSalesData(data || []);
+      } catch (err) {
+        setSalesError(err.message);
+      } finally {
+        setSalesLoading(false);
+      }
+    }
+    fetchSales();
+  }, [salesFilter]);
+
+  // Prepare chart data
+  const chartData = {
+    labels: salesData.map((d) => d.date),
+    datasets: [
+      {
+        label: "Number of Orders",
+        data: salesData.map((d) => d.count),
+        borderColor: "#2563eb",
+        backgroundColor: "rgba(37,99,235,0.1)",
+        yAxisID: "y",
+      },
+      {
+        label: "Total Sales ($)",
+        data: salesData.map((d) => d.total),
+        borderColor: "#22c55e",
+        backgroundColor: "rgba(34,197,94,0.1)",
+        yAxisID: "y1",
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { position: "top" },
+      tooltip: { mode: "index", intersect: false },
+    },
+    scales: {
+      x: {
+        type: "time",
+        time: {
+          unit: salesFilter === "week" ? "day" : salesFilter === "year" ? "month" : "day",
+          tooltipFormat: "PP",
+        },
+        title: { display: true, text: "Date" },
+      },
+      y: {
+        type: "linear",
+        display: true,
+        position: "left",
+        title: { display: true, text: "Number of Orders" },
+      },
+      y1: {
+        type: "linear",
+        display: true,
+        position: "right",
+        grid: { drawOnChartArea: false },
+        title: { display: true, text: "Total Sales ($)" },
+      },
+    },
+  };
+
+  // Prepare scatterplot data: each point is a day, showing number of orders and total value
+  const scatterData = {
+    datasets: [
+      {
+        label: "Orders per Day",
+        data: salesData.map((d) => ({
+          x: d.date,      // date (YYYY-MM-DD)
+          y: d.total,     // total value for that day
+          count: d.count, // number of orders for that day
+        })),
+        backgroundColor: "#2E8B57",
+        borderColor: "#2E8B57",
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        showLine: false,
+      },
+    ],
+  };
+
+  const scatterOptions = {
+    responsive: true,
+    plugins: {
+      legend: { position: "top" },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const point = context.raw;
+            return [
+              `Date: ${point.x}`,
+              `Total Value: $${point.y.toFixed(2)}`,
+              `Orders: ${point.count}`,
+            ];
+          },
+        },
+        mode: "nearest",
+        intersect: true,
+      },
+    },
+    scales: {
+      x: {
+        type: "time",
+        time: {
+          unit: "day",
+          tooltipFormat: "PP",
+        },
+        title: { display: true, text: "Date" },
+      },
+      y: {
+        type: "linear",
+        display: true,
+        title: { display: true, text: "Total Value ($)" },
+      },
+    },
+  };
+
+  const openProductModal = (product) => {
+    setEditingProduct(product);
+    setShowProductModal(true);
+  };
+
+  const handleProductChange = (field, value) => {
+    setEditingProduct((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const saveProduct = async () => {
+    try {
+      const res = await fetch(`/api/products/${editingProduct.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editingProduct),
+        credentials: "include",
+      });
+      if (res.ok) {
+        setShowProductModal(false);
+        setEditingProduct(null);
+        loadProducts(); // Refresh product list
+      } else {
+        alert("Failed to update product.");
+      }
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -133,6 +345,44 @@ export default function AdminDashboard() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
+
+      {/* Sales Chart */}
+      <div className="bg-white shadow rounded-lg p-6 mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-800">Sales Overview</h2>
+          <select
+            value={salesFilter}
+            onChange={e => setSalesFilter(e.target.value)}
+            className="border rounded px-2 py-1"
+          >
+            <option value="week">Last Week</option>
+            <option value="month">Past Month</option>
+            <option value="year">Past Year</option>
+            <option value="all">All Time</option>
+          </select>
+        </div>
+        {salesLoading ? (
+          <div className="flex items-center justify-center h-48">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : salesError ? (
+          <div className="p-4 bg-red-100 text-red-700 rounded">Error: {salesError}</div>
+        ) : (
+          <>
+            <div className="w-full md:w-2/4 mx-auto">
+              <Scatter data={scatterData} options={scatterOptions} height={200} />
+            </div>
+            <div className="mt-6 flex flex-col items-center">
+              <div className="text-lg font-semibold text-gray-700">
+                Total Orders: {salesData.reduce((sum, d) => sum + (d.count || 0), 0)}
+              </div>
+              <div className="text-lg font-semibold text-gray-700">
+                Total Value: ${salesData.reduce((sum, d) => sum + (d.total || 0), 0).toFixed(2)}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Tabs */}
       <div className="border-b border-gray-200 mb-6">
@@ -225,7 +475,7 @@ export default function AdminDashboard() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 ></path>
               </svg>
             </div>
@@ -338,7 +588,10 @@ export default function AdminDashboard() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <button className="text-blue-600 hover:text-blue-900 mr-3">
+                      <button
+                        className="text-blue-600 hover:text-blue-900 mr-3"
+                        onClick={() => openProductModal(product)}
+                      >
                         Edit
                       </button>
                       <button className="text-red-600 hover:text-red-900">
@@ -420,7 +673,9 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {order.user_id?.substring(0, 8)}...
+                        {userNames[order.user_id]
+                          ? userNames[order.user_id]
+                          : order.user_id?.substring(0, 8) + "..."}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -580,6 +835,82 @@ export default function AdminDashboard() {
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Product Edit Modal */}
+      {showProductModal && editingProduct && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
+              onClick={() => setShowProductModal(false)}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Edit Product</h2>
+            <div className="flex flex-col gap-3">
+              <label>
+                Name:
+                <input
+                  type="text"
+                  value={editingProduct.name}
+                  onChange={e => handleProductChange("name", e.target.value)}
+                  className="w-full border rounded px-3 py-2 mt-1"
+                />
+              </label>
+              <label>
+                Price:
+                <input
+                  type="number"
+                  value={editingProduct.price}
+                  onChange={e => handleProductChange("price", Number(e.target.value))}
+                  className="w-full border rounded px-3 py-2 mt-1"
+                />
+              </label>
+              <label>
+                Description:
+                <textarea
+                  value={editingProduct.description ?? ""}
+                  onChange={e => handleProductChange("description", e.target.value)}
+                  className="w-full border rounded px-3 py-2 mt-1"
+                />
+              </label>
+              <label>
+                Category:
+                <input
+                  type="text"
+                  value={editingProduct.category}
+                  onChange={e => handleProductChange("category", e.target.value)}
+                  className="w-full border rounded px-3 py-2 mt-1"
+                />
+              </label>
+              <label>
+                Stock:
+                <input
+                  type="number"
+                  value={editingProduct.stock}
+                  onChange={e => handleProductChange("stock", Number(e.target.value))}
+                  className="w-full border rounded px-3 py-2 mt-1"
+                />
+              </label>
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                onClick={() => setShowProductModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                onClick={saveProduct}
+              >
+                Save
+              </button>
             </div>
           </div>
         </div>

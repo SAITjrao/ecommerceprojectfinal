@@ -35,9 +35,10 @@ export async function POST(request) {
 
     // Create user object with ID
     const user = {
-      id: data.user.id, // This is the UUID
+      id: data.user.id,
       name,
       email: data.user.email,
+      access_token: data.session.access_token,
     };
 
     // Set session cookie
@@ -46,7 +47,7 @@ export async function POST(request) {
       user,
     });
 
-    response.cookies.set("session", JSON.stringify(user), {
+    response.cookies.set("access_token", data.session.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

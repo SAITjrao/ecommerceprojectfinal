@@ -4,12 +4,10 @@ import { useCart } from "@/app/context/CartContext";
 import React from "react";
 import Image from "next/image";
 import { Montserrat } from "next/font/google";
-import WishlistButton from "@/app/components/WishlistButton"; // Add this import at the top
+import WishlistButton from "@/app/components/WishlistButton";
 
 export default function CategoryPage({ params }) {
-  // Unwrap params with React.use() for Next.js 15+
-  const unwrappedParams = React.use(params);
-  const category = unwrappedParams.category;
+  const category = params.category;
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,13 +22,18 @@ export default function CategoryPage({ params }) {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch(`/api/products/${category}`);
-        if (!response.ok) throw new Error("Failed to fetch");
+        // Fetch all products, then filter by category client-side
+        const response = await fetch(`/api/products`);
+        if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
-        setProducts(data.data);
-        // Extract unique materials from the fetched products
+        // Filter products by category
+        const filteredProducts = data.data.filter(
+          (product) => product.category?.toLowerCase() === category.toLowerCase()
+        );
+        setProducts(filteredProducts);
+        // Extract unique materials from the filtered products
         const uniqueMaterials = [
-          ...new Set(data.data.map((product) => product.material)),
+          ...new Set(filteredProducts.map((product) => product.material)),
         ];
         setMaterials(uniqueMaterials);
       } catch (err) {
@@ -44,7 +47,6 @@ export default function CategoryPage({ params }) {
   }, [category]);
 
   const handleAddToCart = (product) => {
-    // Normalize product to always have product_id
     const normalizedProduct = {
       ...product,
       product_id: product.product_id || product.id,
