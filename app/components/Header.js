@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import CartPage from "@/app/cart/page";
@@ -30,7 +30,6 @@ export default function Header() {
         console.error("Failed to fetch user:", err);
       }
     };
-
     fetchUser();
   }, []);
 
@@ -96,22 +95,6 @@ export default function Header() {
             >
               Products
             </Link>
-            {user && (
-              <Link
-                href="/orders"
-                className="text-gray-700 hover:text-blue-500 cursor-pointer"
-              >
-                Orders
-              </Link>
-            )}
-            {user && user.is_admin && (
-              <Link
-                href="/dashboards/admin"
-                className="text-gray-700 hover:text-blue-500 cursor-pointer font-medium"
-              >
-                Admin Dashboard
-              </Link>
-            )}
             <Link
               href="/about"
               className="text-gray-700 hover:text-blue-500 cursor-pointer"
@@ -158,7 +141,21 @@ export default function Header() {
                 </button>
               </>
             ) : (
-              <Link href="/login" className="cursor-pointer">
+              <button
+                className="cursor-pointer bg-transparent border-none p-0"
+                onClick={() => {
+                  if (user) {
+                    if (user.is_admin === true || user.is_admin === "true") {
+                      router.push("/dashboards/admin");
+                    } else {
+                      router.push("/dashboards/user");
+                    }
+                  } else {
+                    router.push("/login");
+                  }
+                }}
+                aria-label="Login"
+              >
                 <Image
                   src="/categories/login-icon.svg"
                   alt="Login Icon"
@@ -166,7 +163,7 @@ export default function Header() {
                   width={28}
                   height={28}
                 />
-              </Link>
+              </button>
             )}
 
             {/* Wishlist Icon - Only show if user is logged in */}

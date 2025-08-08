@@ -46,11 +46,9 @@ export default function WishlistButton({ product, className = "" }) {
 
   return (
     <button
+      className={className}
       onClick={handleToggle}
       disabled={isToggling || loading}
-      className={`wishlist-button ${className} ${
-        inWishlist ? "text-yellow-500" : "text-gray-400"
-      } hover:text-yellow-500 transition-colors duration-200 disabled:opacity-50 cursor-pointer`}
       title={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
     >
       <svg

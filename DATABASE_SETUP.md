@@ -82,7 +82,7 @@ node scripts/clearProducts.js
 - `status` (VARCHAR) - Order status
 - `order_date` (TIMESTAMP) - Order date
 - `payment_status` (VARCHAR) - Payment status
-- `tax_amount` (INTEGER) - Tax Amount
+- `tax` (INTEGER) - Tax Amount
 
 ### Order Items Table
 
@@ -91,7 +91,6 @@ node scripts/clearProducts.js
 - `product_id` (INTEGER) - Foreign key to products
 - `quantity` (INTEGER) - Item quantity
 - `price` (DECIMAL) - Item price
-- `created_at` (TIMESTAMP) - Creation date
 
 ### Carts Table
 

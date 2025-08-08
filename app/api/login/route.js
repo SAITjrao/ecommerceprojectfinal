@@ -39,6 +39,7 @@ export async function POST(request) {
       name,
       email: data.user.email,
       access_token: data.session.access_token,
+      is_admin: userData.is_admin, // <-- Add this line
     };
 
     // Set session cookie
@@ -51,7 +52,8 @@ export async function POST(request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
     });
     return response;
   } catch (error) {

@@ -15,10 +15,14 @@ import {
   TimeScale,
 } from "chart.js";
 import "chartjs-adapter-date-fns";
+import { useRouter } from "next/navigation";
+import { useCart } from "@/app/context/CartContext";
 
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend, TimeScale);
 
 export default function AdminDashboard() {
+  const router = useRouter();
+  const { clearCart } = useCart();
   const [activeTab, setActiveTab] = useState("products");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -38,18 +42,22 @@ export default function AdminDashboard() {
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
 
+  // Add state for search
+  const [productSearch, setProductSearch] = useState("");
+
   useEffect(() => {
     if (activeTab === "products") {
-      loadProducts();
+      loadProducts(productSearch);
     } else if (activeTab === "orders") {
       loadOrders();
     }
-  }, [activeTab, page, pageSize]);
+  }, [productSearch, page, pageSize, activeTab]);
 
-  const loadProducts = async () => {
+  // Update loadProducts to accept a search query
+  const loadProducts = async (search = "") => {
     try {
       setLoading(true);
-      const { data, count } = await fetchProducts(page, pageSize);
+      const { data, count } = await fetchProducts(page, pageSize, search);
       setProducts(data);
       setTotalProducts(count);
     } catch (err) {
@@ -301,6 +309,21 @@ export default function AdminDashboard() {
     setShowProductModal(true);
   };
 
+  // Add this function to open the modal for adding a new product
+  const openAddProductModal = () => {
+    setEditingProduct({
+      name: "",
+      price: 0,
+      description: "",
+      material: "",
+      quantity: 0,
+      category: "",
+      stock: 0,
+      image_url: "",
+    });
+    setShowProductModal(true);
+  };
+
   const handleProductChange = (field, value) => {
     setEditingProduct((prev) => ({
       ...prev,
@@ -308,33 +331,47 @@ export default function AdminDashboard() {
     }));
   };
 
+  // Update saveProduct to handle both add and edit
   const saveProduct = async () => {
     try {
-      const res = await fetch(`/api/products/${editingProduct.id}`, {
-        method: "PATCH",
+      const method = editingProduct.id ? "PATCH" : "POST";
+      const url = editingProduct.id
+        ? `/api/products/${editingProduct.id}`
+        : `/api/products`;
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingProduct),
         credentials: "include",
       });
+
       if (res.ok) {
         setShowProductModal(false);
         setEditingProduct(null);
         loadProducts(); // Refresh product list
       } else {
-        alert("Failed to update product.");
+        alert("Failed to save product.");
       }
     } catch (err) {
       alert(err.message);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
+  const [logoutLoading, setLogoutLoading] = useState(false);
+
+  const handleLogout = async () => {
+    setLogoutLoading(true);
+    try {
+      await fetch("/api/logout", { method: "POST", credentials: "include" });
+      clearCart();
+      router.replace("/login");
+    } catch (err) {
+      // Optionally show error
+    } finally {
+      setLogoutLoading(false);
+    }
+  };
 
   if (error) {
     return (
@@ -344,7 +381,16 @@ export default function AdminDashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold"
+          disabled={logoutLoading}
+        >
+          {logoutLoading ? "Logging out..." : "Logout"}
+        </button>
+      </div>
 
       {/* Sales Chart */}
       <div className="bg-white shadow rounded-lg p-6 mb-8">
@@ -462,6 +508,8 @@ export default function AdminDashboard() {
               <input
                 type="text"
                 placeholder="Search products..."
+                value={productSearch}
+                onChange={e => setProductSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <svg
@@ -475,11 +523,14 @@ export default function AdminDashboard() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="2"
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 ></path>
               </svg>
             </div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
+            <button
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center"
+              onClick={openAddProductModal}
+            >
               <svg
                 className="w-5 h-5 mr-2"
                 fill="none"
@@ -497,111 +548,113 @@ export default function AdminDashboard() {
               Add Product
             </button>
           </div>
-
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Product
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Price
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Stock
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {products.map((product) => (
-                  <tr key={product.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                            <svg
-                              className="h-6 w-6 text-gray-400"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                              ></path>
-                            </svg>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {product.name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            SKU: {product.sku || "N/A"}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 capitalize">
-                        {product.category}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        ${product.price?.toFixed(2)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {product.stock}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          product.stock > 10
-                            ? "bg-green-100 text-green-800"
-                            : product.stock > 0
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {product.stock > 10
-                          ? "In Stock"
-                          : product.stock > 0
-                          ? "Low Stock"
-                          : "Out of Stock"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <button
-                        className="text-blue-600 hover:text-blue-900 mr-3"
-                        onClick={() => openProductModal(product)}
-                      >
-                        Edit
-                      </button>
-                      <button className="text-red-600 hover:text-red-900">
-                        Delete
-                      </button>
-                    </td>
+            {loading ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+              </div>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Product
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Price
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Stock
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {products.map((product) => (
+                    <tr key={product.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                              <svg
+                                className="h-6 w-6 text-gray-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                ></path>
+                              </svg>
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {product.name}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 capitalize">
+                          {product.category}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          ${product.price?.toFixed(2)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {product.stock}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            product.stock > 10
+                              ? "bg-green-100 text-green-800"
+                              : product.stock > 0
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {product.stock > 10
+                            ? "In Stock"
+                            : product.stock > 0
+                            ? "Low Stock"
+                            : "Out of Stock"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <button
+                          className="text-blue-600 hover:text-blue-900 mr-3"
+                          onClick={() => openProductModal(product)}
+                        >
+                          Edit
+                        </button>
+                        <button className="text-red-600 hover:text-red-900">
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       )}
@@ -851,7 +904,9 @@ export default function AdminDashboard() {
             >
               &times;
             </button>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Edit Product</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              {editingProduct.id ? "Edit Product" : "Add Product"}
+            </h2>
             <div className="flex flex-col gap-3">
               <label>
                 Name:
@@ -880,6 +935,24 @@ export default function AdminDashboard() {
                 />
               </label>
               <label>
+                Material:
+                <input
+                  type="text"
+                  value={editingProduct.material ?? ""}
+                  onChange={e => handleProductChange("material", e.target.value)}
+                  className="w-full border rounded px-3 py-2 mt-1"
+                />
+              </label>
+              <label>
+                Quantity /case:
+                <input
+                  type="number"
+                  value={editingProduct.quantity}
+                  onChange={e => handleProductChange("quantity", Number(e.target.value))}
+                  className="w-full border rounded px-3 py-2 mt-1"
+                />
+              </label>
+              <label>
                 Category:
                 <input
                   type="text"
@@ -894,6 +967,15 @@ export default function AdminDashboard() {
                   type="number"
                   value={editingProduct.stock}
                   onChange={e => handleProductChange("stock", Number(e.target.value))}
+                  className="w-full border rounded px-3 py-2 mt-1"
+                />
+              </label>
+              <label>
+                Image URL:
+                <input
+                  type="text"
+                  value={editingProduct.image_url ?? ""}
+                  onChange={e => handleProductChange("image_url", e.target.value)}
                   className="w-full border rounded px-3 py-2 mt-1"
                 />
               </label>

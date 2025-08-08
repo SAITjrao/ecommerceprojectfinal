@@ -138,7 +138,7 @@ export const CartProvider = ({ children }) => {
   // Clear the cart
   const clearCart = () => {
     setCart([]);
-    // Optionally clear backend cart items as well
+    localStorage.removeItem("cart"); // If you use localStorage for cart
   };
 
   return (

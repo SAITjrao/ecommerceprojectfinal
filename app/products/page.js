@@ -234,17 +234,21 @@ export default function ProductsPage() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                   {filteredProducts.map((product, idx) => {
-                    const uniqueId =
-                      product.id || product.id || `${product.name}-${idx}`;
+                    const uniqueId = product.id || product.id || `${product.name}-${idx}`;
                     return (
                       <div
                         key={uniqueId}
                         className="bg-gray-50 rounded-lg shadow transition-transform duration-200 hover:shadow-lg hover:scale-[1.03] p-0 flex flex-col relative overflow-hidden cursor-pointer"
-                        onClick={() => setModalProduct(product)}
+                        onClick={e => {
+                          // Only open modal if click is NOT on the wishlist button
+                          if (!e.target.closest('.wishlist-btn')) {
+                            setModalProduct(product);
+                          }
+                        }}
                       >
                         {/* Wishlist Button */}
                         <div className="absolute top-4 right-4 z-10">
-                          <WishlistButton product={product} />
+                          <WishlistButton product={product} className="wishlist-btn" />
                         </div>
 
                         {/* Product Image*/}
