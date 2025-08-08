@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { fetchProducts } from "@/lib/fetchAllProducts";
 import { Line, Scatter } from "react-chartjs-2";
@@ -47,16 +47,7 @@ export default function AdminDashboard() {
   // Add state for search
   const [productSearch, setProductSearch] = useState("");
 
-  useEffect(() => {
-    if (activeTab === "products") {
-      loadProducts(productSearch);
-    } else if (activeTab === "orders") {
-      loadOrders();
-    }
-  }, [productSearch, page, pageSize, activeTab,]);
-
-  // Update loadProducts to accept a search query
-  const loadProducts = async (search = "") => {
+  const loadProducts = useCallback(async (search = "") => {
     try {
       setLoading(true);
       const { data, count } = await fetchProducts(page, pageSize, search);
@@ -67,9 +58,9 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize]);
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -87,7 +78,19 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (activeTab === "products") {
+        loadProducts(productSearch);
+      } else if (activeTab === "orders") {
+        loadOrders();
+      }
+    }, 500); // Delay by 500ms
+
+    return () => clearTimeout(timer); // Cleanup on dependency change
+  }, [activeTab, productSearch, page, pageSize]);
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
@@ -177,7 +180,6 @@ export default function AdminDashboard() {
       setUserNames(newNames);
     }
     fetchUserNames();
-    // eslint-disable-next-line
   }, [orders]);
 
   // Fetch sales data for chart
