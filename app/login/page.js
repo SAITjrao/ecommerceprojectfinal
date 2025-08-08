@@ -108,7 +108,7 @@ export default function Login() {
           )}
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+            className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 cursor-pointer"
             disabled={loading}
           >
             {loading ? (
@@ -121,7 +121,7 @@ export default function Login() {
             )}
           </button>
           <div className="block text-center mt-4">
-            <Link href="/register" className="text-blue-500 hover:underline">
+            <Link href="/register" className="text-green-600 hover:text-green-700">
               Don&apos;t have an account? Register here
             </Link>
           </div>

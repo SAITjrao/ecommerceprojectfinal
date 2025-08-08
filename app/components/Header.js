@@ -120,7 +120,7 @@ export default function Header() {
             />
             <button
               type="submit"
-              className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+              className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 cursor-pointer"
             >
               Search
             </button>

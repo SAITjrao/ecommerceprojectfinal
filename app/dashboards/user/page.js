@@ -3,12 +3,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/app/context/CartContext";
 import { useWishlist } from "@/app/context/WishlistContext";
+import OrdersList from "@/app/orders/OrdersList";
+import ProductCard from "@/app/components/ProductCard";
 
 export default function UserDashboard() {
   const [activeTab, setActiveTab] = useState("orders");
-  const [orders, setOrders] = useState([]);
   const [wishlist, setWishlist] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const router = useRouter();
   const { clearCart } = useCart();
@@ -17,35 +18,15 @@ export default function UserDashboard() {
   // Get user ID from localStorage (or context)
   const userId = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user"))?.id : null;
 
+  // Only fetch wishlist when tab is "wishlist"
   useEffect(() => {
-    const fetchData = async () => {
+    if (activeTab === "wishlist" && userId) {
       setLoading(true);
-      try {
-        if (activeTab === "orders") {
-          if (!userId) {
-            setOrders([]);
-            return;
-          }
-          const res = await fetch(`/api/orders?user_id=${userId}`, { credentials: "include" });
-          const data = await res.json();
-          setOrders(data.orders || []);
-        } else {
-          if (!userId) {
-            setWishlist([]);
-            return;
-          }
-          // Use your existing wishlist API
-          const res = await fetch(`/api/wishlist?user_id=${userId}`, { credentials: "include" });
-          const data = await res.json();
-          setWishlist(data.wishlist || []);
-        }
-      } catch (err) {
-        // Handle error
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+      fetch(`/api/wishlist?user_id=${userId}`, { credentials: "include" })
+        .then(res => res.json())
+        .then(data => setWishlist(data.wishlist || []))
+        .finally(() => setLoading(false));
+    }
   }, [activeTab, userId]);
 
   const handleLogout = async () => {
@@ -88,36 +69,21 @@ export default function UserDashboard() {
           Wishlist
         </button>
       </div>
-      {loading ? (
+      {activeTab === "orders" ? (
+        <OrdersList />
+      ) : loading ? (
         <div>Loading...</div>
-      ) : activeTab === "orders" ? (
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Your Orders</h2>
-          {orders.length === 0 ? (
-            <div>No orders found.</div>
-          ) : (
-            <ul>
-              {orders.map(order => (
-                <li key={order.order_id} className="mb-2 p-2 border rounded">
-                  Order #{order.order_id} - {order.status}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
       ) : (
         <div>
           <h2 className="text-xl font-semibold mb-4">Your Wishlist</h2>
           {wishlist.length === 0 ? (
             <div>No wishlist items found.</div>
           ) : (
-            <ul>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               {wishlist.map(item => (
-                <li key={item.wishlist_id || item.id} className="mb-2 p-2 border rounded">
-                  {item.name} {item.price ? `- $${item.price}` : ""}
-                </li>
+                <ProductCard key={item.wishlist_id || item.id} product={item} />
               ))}
-            </ul>
+            </div>
           )}
         </div>
       )}

@@ -7,16 +7,25 @@ import { useState } from "react";
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [showMessage, setShowMessage] = useState(false);
 
   const uniqueId = product.id || `${product.name}-${product.category}`;
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
-    alert(`Added ${quantity} × ${product.name} to Cart`);
+    setShowMessage(true);
+    setTimeout(() => setShowMessage(false), 2500); // Message disappears after 2.5s
   };
 
   return (
     <div className="bg-gray-50 rounded-lg shadow transition-transform duration-200 hover:shadow-lg hover:scale-[1.03] p-0 flex flex-col relative overflow-hidden cursor-pointer">
+      {/* Notification message */}
+      {showMessage && (
+        <div className="fixed top-6 right-6 z-50 bg-green-600 text-white px-6 py-3 rounded shadow-lg animate-fade-in">
+          Added {quantity} × {product.name} to Cart
+        </div>
+      )}
+
       {/* Wishlist Button */}
       <div className="absolute top-4 right-4 z-10">
         <WishlistButton product={product} />
@@ -44,7 +53,9 @@ export default function ProductCard({ product }) {
         <h2 className="text-2xl font-bold text-gray-800">{product.name}</h2>
         <div className="flex flex-col items-end">
           <p className="text-3xl font-extrabold text-gray-900 leading-none">${product.price}</p>
-          <p className="text-lg font-semibold text-gray-700 mt-2">{product.quantity}/case</p>
+          <p className="text-lg font-semibold text-gray-700 mt-2">
+            {product.quantity !== undefined ? `${product.quantity}/case` : "N/A"}
+          </p>
         </div>
       </div>
 

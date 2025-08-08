@@ -104,6 +104,7 @@ export async function GET(req) {
           id,
           name,
           price,
+          quantity,
           category,
           image_url
         )
