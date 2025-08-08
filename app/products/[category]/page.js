@@ -1,13 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useCart } from "@/app/context/CartContext";
 import React from "react";
+import { useCart } from "@/app/context/CartContext";
 import Image from "next/image";
 import { Montserrat } from "next/font/google";
 import WishlistButton from "@/app/components/WishlistButton";
 
 export default function CategoryPage({ params }) {
-  const category = params.category;
+  const category = params?.category || "";
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,16 +22,13 @@ export default function CategoryPage({ params }) {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // Fetch all products, then filter by category client-side
         const response = await fetch(`/api/products`);
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
-        // Filter products by category
         const filteredProducts = data.data.filter(
           (product) => product.category?.toLowerCase() === category.toLowerCase()
         );
         setProducts(filteredProducts);
-        // Extract unique materials from the filtered products
         const uniqueMaterials = [
           ...new Set(filteredProducts.map((product) => product.material)),
         ];
@@ -43,7 +40,7 @@ export default function CategoryPage({ params }) {
       }
     };
 
-    fetchProducts();
+    if (category) fetchProducts();
   }, [category]);
 
   const handleAddToCart = (product) => {
@@ -117,7 +114,7 @@ export default function CategoryPage({ params }) {
               <div>
                 <label className="block font-medium mb-2">Sort by Material</label>
                 <div className="flex flex-col gap-2">
-                  {materials.map((mat) => (
+                  {materials.filter(Boolean).map((mat) => (
                     <label
                       key={mat}
                       className="flex items-center gap-2 hover:bg-green-50 rounded cursor-pointer px-2 py-1"
