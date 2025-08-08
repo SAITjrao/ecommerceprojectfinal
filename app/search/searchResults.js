@@ -2,8 +2,9 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import ProductCard from './../components/ProductCard';
+import ProductCard from '../components/ProductCard';
 
+// comments so I can update this file
 export default function SearchResults() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q');
