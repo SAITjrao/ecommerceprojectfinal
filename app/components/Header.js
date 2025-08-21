@@ -95,18 +95,6 @@ export default function Header() {
             >
               Products
             </Link>
-            <Link
-              href="/about"
-              className="text-gray-700 hover:text-blue-500 cursor-pointer"
-            >
-              About
-            </Link>
-            <Link
-              href="/contact"
-              className="text-gray-700 hover:text-blue-500 cursor-pointer"
-            >
-              Contact
-            </Link>
           </nav>
 
           {/* Search Bar */}
